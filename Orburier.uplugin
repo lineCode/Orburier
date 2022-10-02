@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Orburier",
+	"Description": "Orburier is an UE5 network predicted gameplay framework.",
+	"Category": "Other",
+	"CreatedBy": "PinoRIP",
+	"CreatedByURL": "https://github.com/PinoRIP/",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "Orburier",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
