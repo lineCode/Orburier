@@ -35,7 +35,7 @@ bool FOrbGameplayTagContainer::operator==(FOrbGameplayTagContainer const& other)
 		return false;
 	}
 
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : other)
+	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : other.GameplayTags)
 	{
 		if (!TagMatchesAnyExact(tag.Key))
 		{
@@ -51,152 +51,145 @@ bool FOrbGameplayTagContainer::operator!=(FOrbGameplayTagContainer const& other)
 	return !operator==(other);
 }
 
-FGameplayTagContainer FOrbGameplayTagContainer::Filter(const FGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FGameplayTagContainer resultContainer;
-
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : GameplayTags)
-	{
-		if (tag.Key.MatchesAny(otherContainer))
-		{
-			resultContainer.AddTagFast(tag.Key);
-		}
-	}
-
-	return resultContainer;
-}
-
-FGameplayTagContainer FOrbGameplayTagContainer::Filter(const FOrbGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FGameplayTagContainer resultContainer;
-
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer)
-	{
-		if (TagMatchesAny(tag.Key))
-		{
-			resultContainer.AddTagFast(tag.Key);
-		}
-	}
-
-	return resultContainer;
-}
-
-FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMulti(const FGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FOrbGameplayTagContainer resultContainer;
-
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : GameplayTags)
-	{
-		if (tag.Key.MatchesAny(otherContainer))
-		{
-			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
-			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
-		}
-	}
-
-	return resultContainer;
-}
-
-FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMulti(const FOrbGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FOrbGameplayTagContainer resultContainer;
-
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer)
-	{
-		if (TagMatchesAny(tag.Key))
-		{
-			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
-			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
-		}
-	}
-
-	return resultContainer;
-}
-
-FGameplayTagContainer FOrbGameplayTagContainer::FilterExact(const FGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FGameplayTagContainer resultContainer;
-
-	for (const FGameplayTag& tag : otherContainer)
-	{
-		if (TagMatchesAnyExact(tag))
-		{
-			resultContainer.AddTagFast(tag);
-		}
-	}
-
-	return resultContainer;
-}
-
-FGameplayTagContainer FOrbGameplayTagContainer::FilterExact(const FOrbGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FGameplayTagContainer resultContainer;
-
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer)
-	{
-		if (TagMatchesAnyExact(tag.Key))
-		{
-			resultContainer.AddTagFast(tag.Key);
-		}
-	}
-
-	return resultContainer;
-}
-
-FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMultiExact(const FGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FOrbGameplayTagContainer resultContainer;
-
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : GameplayTags)
-	{
-		if (tag.Key.MatchesAnyExact(otherContainer))
-		{
-			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
-			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
-		}
-	}
-
-	return resultContainer;
-}
-
-FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMultiExact(const FOrbGameplayTagContainer& otherContainer) const
-{
-	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
-
-	FOrbGameplayTagContainer resultContainer;
-
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer)
-	{
-		if (TagMatchesAnyExact(tag.Key))
-		{
-			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
-			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
-		}
-	}
-
-	return resultContainer;
-}
-
-bool FOrbGameplayTagContainer::MatchesQuery(const FGameplayTagQuery& query) const
-{
-	FGameplayTagContainer container;
-	GetContainerConst(container);
-	return query.Matches(container);
-}
+//FGameplayTagContainer FOrbGameplayTagContainer::Filter(const FGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FGameplayTagContainer resultContainer;
+//
+//	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : GameplayTags)
+//	{
+//		if (tag.Key.MatchesAny(otherContainer))
+//		{
+//			resultContainer.AddTagFast(tag.Key);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
+//
+//FGameplayTagContainer FOrbGameplayTagContainer::Filter(const FOrbGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FGameplayTagContainer resultContainer;
+//
+//	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer.GameplayTags)
+//	{
+//		if (TagMatchesAny(tag.Key))
+//		{
+//			resultContainer.AddTagFast(tag.Key);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
+//
+//FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMulti(const FGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FOrbGameplayTagContainer resultContainer;
+//
+//	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : GameplayTags)
+//	{
+//		if (tag.Key.MatchesAny(otherContainer))
+//		{
+//			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
+//			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
+//
+//FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMulti(const FOrbGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FOrbGameplayTagContainer resultContainer;
+//
+//	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer.GameplayTags)
+//	{
+//		if (TagMatchesAny(tag.Key))
+//		{
+//			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
+//			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
+//
+//FGameplayTagContainer FOrbGameplayTagContainer::FilterExact(const FGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FGameplayTagContainer resultContainer;
+//
+//	for (const FGameplayTag& tag : otherContainer)
+//	{
+//		if (TagMatchesAnyExact(tag))
+//		{
+//			resultContainer.AddTagFast(tag);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
+//
+//FGameplayTagContainer FOrbGameplayTagContainer::FilterExact(const FOrbGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FGameplayTagContainer resultContainer;
+//
+//	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer.GameplayTags)
+//	{
+//		if (TagMatchesAnyExact(tag.Key))
+//		{
+//			resultContainer.AddTagFast(tag.Key);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
+//
+//FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMultiExact(const FGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FOrbGameplayTagContainer resultContainer;
+//
+//	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : GameplayTags)
+//	{
+//		if (tag.Key.MatchesAnyExact(otherContainer))
+//		{
+//			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
+//			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
+//
+//FOrbGameplayTagContainer FOrbGameplayTagContainer::FilterMultiExact(const FOrbGameplayTagContainer& otherContainer) const
+//{
+//	SCOPE_CYCLE_COUNTER(STAT_FOrbGameplayTagContainer_Filter);
+//
+//	FOrbGameplayTagContainer resultContainer;
+//
+//	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : otherContainer.GameplayTags)
+//	{
+//		if (TagMatchesAnyExact(tag.Key))
+//		{
+//			FOrbGameplayTagContainerEntry infoCopy = tag.Value;
+//			resultContainer.GameplayTags.Add(tag.Key, infoCopy);
+//		}
+//	}
+//
+//	return resultContainer;
+//}
 
 void FOrbGameplayTagContainer::AppendTags(FGameplayTagContainer const& other)
 {
@@ -229,7 +222,7 @@ void FOrbGameplayTagContainer::AppendTags(FOrbGameplayTagContainer const& other)
 	}
 	
 	// Add other container's tags to our own
-	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& otherTag : other)
+	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& otherTag : other.GameplayTags)
 	{
 		if(otherTag.Value.ExplicitCount > 0)
 		{
@@ -238,55 +231,55 @@ void FOrbGameplayTagContainer::AppendTags(FOrbGameplayTagContainer const& other)
 	}
 }
 
-void FOrbGameplayTagContainer::AppendMatchingTags(FGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB)
-{
-	for(const FGameplayTag& otherATag : otherA)
-	{
-		if (otherATag.MatchesAny(otherB))
-		{
-			AddTag(otherATag);
-		}
-	}
-}
-
-void FOrbGameplayTagContainer::AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB)
-{
-	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& otherATag : otherA)
-	{
-		if(otherATag.Value.ExplicitCount > 0)
-		{
-			if (otherATag.Key.MatchesAny(otherB))
-			{
-				AddTag(otherATag.Key, otherATag.Value.ExplicitCount);
-			}
-		}
-	}
-}
-
-void FOrbGameplayTagContainer::AppendMatchingTags(FGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB)
-{
-	for(const FGameplayTag& otherATag : otherA)
-	{
-		if (otherB.TagMatchesAny(otherATag))
-		{
-			AddTag(otherATag);
-		}
-	}
-}
-
-void FOrbGameplayTagContainer::AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB)
-{
-	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& otherATag : otherA)
-	{
-		if(otherATag.Value.ExplicitCount > 0)
-		{
-			if (otherB.TagMatchesAny(otherATag.Key))
-			{
-				AddTag(otherATag.Key, otherATag.Value.ExplicitCount);
-			}
-		}
-	}
-}
+//void FOrbGameplayTagContainer::AppendMatchingTags(FGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB)
+//{
+//	for(const FGameplayTag& otherATag : otherA)
+//	{
+//		if (otherATag.MatchesAny(otherB))
+//		{
+//			AddTag(otherATag);
+//		}
+//	}
+//}
+//
+//void FOrbGameplayTagContainer::AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB)
+//{
+//	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& otherATag : otherA.GameplayTags)
+//	{
+//		if(otherATag.Value.ExplicitCount > 0)
+//		{
+//			if (otherATag.Key.MatchesAny(otherB))
+//			{
+//				AddTag(otherATag.Key, otherATag.Value.ExplicitCount);
+//			}
+//		}
+//	}
+//}
+//
+//void FOrbGameplayTagContainer::AppendMatchingTags(FGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB)
+//{
+//	for(const FGameplayTag& otherATag : otherA)
+//	{
+//		if (otherB.TagMatchesAny(otherATag))
+//		{
+//			AddTag(otherATag);
+//		}
+//	}
+//}
+//
+//void FOrbGameplayTagContainer::AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB)
+//{
+//	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& otherATag : otherA.GameplayTags)
+//	{
+//		if(otherATag.Value.ExplicitCount > 0)
+//		{
+//			if (otherB.TagMatchesAny(otherATag.Key))
+//			{
+//				AddTag(otherATag.Key, otherATag.Value.ExplicitCount);
+//			}
+//		}
+//	}
+//}
 
 void FOrbGameplayTagContainer::RemoveTags(const FGameplayTagContainer& tagsToRemove)
 {
@@ -298,7 +291,7 @@ void FOrbGameplayTagContainer::RemoveTags(const FGameplayTagContainer& tagsToRem
 
 void FOrbGameplayTagContainer::RemoveTags(const FOrbGameplayTagContainer& tagsToRemove)
 {
-	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : tagsToRemove)
+	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : tagsToRemove.GameplayTags)
 	{
 		if(tag.Value.ExplicitCount > 0)
 		{
@@ -403,11 +396,6 @@ void FOrbGameplayTagContainer::AddTagToMap(const FGameplayTag& tagToAdd, int32 c
 		}
 			
 	}
-}
-
-const FGameplayTagContainer& FOrbGameplayTagContainer::GetAsContainer()
-{
-	return GetContainer();
 }
 
 void FOrbGameplayTagContainer::PauseTagChangedEvent()
@@ -573,39 +561,4 @@ bool FOrbGameplayTagContainer::TagMatchesAnyExact(const FGameplayTag& tagToCheck
 	// This should always be invalid if the node is missing
 	ensureMsgf(!IsValid(), TEXT("Valid tag failed to conver to single tag container. %s"), *tagToCheck.ToString() );
 	return false;
-}
-
-FGameplayTagContainer& FOrbGameplayTagContainer::GetContainer()
-{
-	if(!IsCachedTagContainerValid)
-	{
-		IsCachedTagContainerValid = true;
-		GetThisContainerVersion(GameplayTagContainer);
-	}
-
-	return GameplayTagContainer;
-}
-
-void FOrbGameplayTagContainer::GetContainerConst(FGameplayTagContainer& container) const
-{
-	if(IsCachedTagContainerValid)
-	{
-		container = GameplayTagContainer;
-	}
-	else
-	{
-		GetThisContainerVersion(container);
-	}
-}
-
-void FOrbGameplayTagContainer::GetThisContainerVersion(FGameplayTagContainer& container) const
-{
-	MakeContainer(container, true);
-}
-
-void FOrbGameplayTagContainer::MakeContainer(FGameplayTagContainer& container, bool exact) const
-{
-	TArray<FGameplayTag> gameplayTags;
-	GetAsArray(gameplayTags, exact);
-	container = FGameplayTagContainer::CreateFromArray(gameplayTags);
 }

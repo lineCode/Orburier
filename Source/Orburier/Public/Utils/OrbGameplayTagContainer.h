@@ -116,21 +116,22 @@ struct ORBURIER_API FOrbGameplayTagContainer
 		return false;
 	}
 	/**
-	* Checks if this container contains ANY of the tags in the specified container, also checks against parent tags
+	* Checks if this container contains ANY (not exact) of the exact tags in the specified container, also checks against parent tags
 	* {"A.1"}.HasAny({"A","B"}) will return True, {"A"}.HasAny({"A.1","B"}) will return False
 	* If ContainerToCheck is empty/invalid it will always return False
+	* ContainerToCheck w
 	*
 	* @return True if this container has ANY of the tags of in ContainerToCheck
 	*/
-	FORCEINLINE_DEBUGGABLE bool HasAny(const FOrbGameplayTagContainer& ContainerToCheck) const
+	bool HasAny(const FOrbGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
 		{
 			return false;
 		}
-		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck)
+		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck.GameplayTags)
 		{
-			if (GameplayTags.Contains(OtherTag.Key))
+			if (OtherTag.Value.ExplicitCount > 0 && GameplayTags.Contains(OtherTag.Key))
 			{
 				return true;
 			}
@@ -175,8 +176,11 @@ struct ORBURIER_API FOrbGameplayTagContainer
 		// Only check check explicit tag list
 		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck)
 		{
-			const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(OtherTag.Key);
-			if (tagInfo && tagInfo->ExplicitCount > 0) return true;
+			if(OtherTag.Value.ExplicitCount > 0)
+			{
+				const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(OtherTag.Key);
+				if (tagInfo && tagInfo->ExplicitCount > 0) return true;
+			}
 		}
 		return false;
 	}
@@ -300,80 +304,71 @@ struct ORBURIER_API FOrbGameplayTagContainer
 		return GameplayTags.Num() == 0;
 	}
 	
-	/**
-	 * Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	 *
-	 * @param otherContainer		The Container to filter against
-	 *
-	 * @return A FGameplayTagContainer containing the filtered tags
-	 */
-	FGameplayTagContainer Filter(const FGameplayTagContainer& otherContainer) const;
-	/**
-	* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	*
-	* @param otherContainer		The Container to filter against
-	*
-	* @return A FGameplayTagContainer containing the filtered tags
-	*/
-	FGameplayTagContainer Filter(const FOrbGameplayTagContainer& otherContainer) const;
-	/**
-	* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	*
-	* @param otherContainer		The Container to filter against
-	*
-	* @return A FGameplayTagContainer containing the filtered tags
-	*/
-	FOrbGameplayTagContainer FilterMulti(const FGameplayTagContainer& otherContainer) const;
-	/**
-	* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	*
-	* @param otherContainer		The Container to filter against
-	*
-	* @return A FGameplayTagContainer containing the filtered tags
-	*/
-	FOrbGameplayTagContainer FilterMulti(const FOrbGameplayTagContainer& otherContainer) const;
+	///**
+	// * Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	// *
+	// * @param otherContainer		The Container to filter against
+	// *
+	// * @return A FGameplayTagContainer containing the filtered tags
+	// */
+	//FGameplayTagContainer Filter(const FGameplayTagContainer& otherContainer) const;
+	///**
+	//* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	//*
+	//* @param otherContainer		The Container to filter against
+	//*
+	//* @return A FGameplayTagContainer containing the filtered tags
+	//*/
+	//FGameplayTagContainer Filter(const FOrbGameplayTagContainer& otherContainer) const;
+	///**
+	//* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	//*
+	//* @param otherContainer		The Container to filter against
+	//*
+	//* @return A FGameplayTagContainer containing the filtered tags
+	//*/
+	//FOrbGameplayTagContainer FilterMulti(const FGameplayTagContainer& otherContainer) const;
+	///**
+	//* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	//*
+	//* @param otherContainer		The Container to filter against
+	//*
+	//* @return A FGameplayTagContainer containing the filtered tags
+	//*/
+	//FOrbGameplayTagContainer FilterMulti(const FOrbGameplayTagContainer& otherContainer) const;
 
-	/**
-	* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	*
-	* @param otherContainer		The Container to filter against
-	*
-	* @return A FGameplayTagContainer containing the filtered tags
-	*/
-	FGameplayTagContainer FilterExact(const FGameplayTagContainer& otherContainer) const;
-	/**
-	* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	*
-	* @param otherContainer		The Container to filter against
-	*
-	* @return A FGameplayTagContainer containing the filtered tags
-	*/
-	FGameplayTagContainer FilterExact(const FOrbGameplayTagContainer& otherContainer) const;
-	/**
-	* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	*
-	* @param otherContainer		The Container to filter against
-	*
-	* @return A FGameplayTagContainer containing the filtered tags
-	*/
-	FOrbGameplayTagContainer FilterMultiExact(const FGameplayTagContainer& otherContainer) const;
-	/**
-	* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
-	*
-	* @param otherContainer		The Container to filter against
-	*
-	* @return A FGameplayTagContainer containing the filtered tags
-	*/
-	FOrbGameplayTagContainer FilterMultiExact(const FOrbGameplayTagContainer& otherContainer) const;
-
-	/** 
-	 * Checks if this container matches the given query.
-	 *
-	 * @param query		Query we are checking against
-	 *
-	 * @return True if this container matches the query, false otherwise.
-	 */
-	bool MatchesQuery(const struct FGameplayTagQuery& query) const;
+	///**
+	//* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	//*
+	//* @param otherContainer		The Container to filter against
+	//*
+	//* @return A FGameplayTagContainer containing the filtered tags
+	//*/
+	//FGameplayTagContainer FilterExact(const FGameplayTagContainer& otherContainer) const;
+	///**
+	//* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	//*
+	//* @param otherContainer		The Container to filter against
+	//*
+	//* @return A FGameplayTagContainer containing the filtered tags
+	//*/
+	//FGameplayTagContainer FilterExact(const FOrbGameplayTagContainer& otherContainer) const;
+	///**
+	//* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	//*
+	//* @param otherContainer		The Container to filter against
+	//*
+	//* @return A FGameplayTagContainer containing the filtered tags
+	//*/
+	//FOrbGameplayTagContainer FilterMultiExact(const FGameplayTagContainer& otherContainer) const;
+	///**
+	//* Returns a filtered version of this container, returns all tags that match against any of the tags in OtherContainer, expanding parents
+	//*
+	//* @param otherContainer		The Container to filter against
+	//*
+	//* @return A FGameplayTagContainer containing the filtered tags
+	//*/
+	//FOrbGameplayTagContainer FilterMultiExact(const FOrbGameplayTagContainer& otherContainer) const;
 
 	/** 
 	 * Adds all the tags from one container to this container 
@@ -390,62 +385,62 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	*/
 	void AppendTags(FOrbGameplayTagContainer const& other);
 
-	/** 
-	 * Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
-	 * parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
-	 * the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
-	 * in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
-	 * and OtherB has Color.Red, that will count as a match due to the Color parent match!
-	 * If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
-	 * If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
-	 * Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
-	 *
-	 * @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
-	 * @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
-	 */
-	void AppendMatchingTags(FGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB);
-	/** 
-	* Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
-	* parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
-	* the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
-	* in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
-	* and OtherB has Color.Red, that will count as a match due to the Color parent match!
-	* If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
-	* If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
-	* Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
-	*
-	* @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
-	* @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
-	*/
-	void AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB);
-	/** 
-	* Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
-	* parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
-	* the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
-	* in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
-	* and OtherB has Color.Red, that will count as a match due to the Color parent match!
-	* If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
-	* If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
-	* Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
-	*
-	* @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
-	* @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
-	*/
-	void AppendMatchingTags(FGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB);
-	/** 
-	* Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
-	* parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
-	* the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
-	* in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
-	* and OtherB has Color.Red, that will count as a match due to the Color parent match!
-	* If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
-	* If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
-	* Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
-	*
-	* @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
-	* @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
-	*/
-	void AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB);
+	///** 
+	// * Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
+	// * parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
+	// * the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
+	// * in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
+	// * and OtherB has Color.Red, that will count as a match due to the Color parent match!
+	// * If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
+	// * If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
+	// * Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
+	// *
+	// * @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
+	// * @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
+	// */
+	//void AppendMatchingTags(FGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB);
+	///** 
+	//* Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
+	//* parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
+	//* the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
+	//* in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
+	//* and OtherB has Color.Red, that will count as a match due to the Color parent match!
+	//* If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
+	//* If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
+	//* Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
+	//*
+	//* @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
+	//* @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
+	//*/
+	//void AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FGameplayTagContainer const& otherB);
+	///** 
+	//* Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
+	//* parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
+	//* the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
+	//* in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
+	//* and OtherB has Color.Red, that will count as a match due to the Color parent match!
+	//* If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
+	//* If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
+	//* Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
+	//*
+	//* @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
+	//* @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
+	//*/
+	//void AppendMatchingTags(FGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB);
+	///** 
+	//* Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
+	//* parent tag in A, not just exact matches!  So while this should be the union of the container this is called on with
+	//* the intersection of OtherA and OtherB, it's not exactly that.  Since OtherB matches against its parents, any tag
+	//* in OtherA which has a parent match with a parent of OtherB will count.  For example, if OtherA has Color.Green
+	//* and OtherB has Color.Red, that will count as a match due to the Color parent match!
+	//* If you want an exact match, you need to call A.FilterExact(B) (above) to get the intersection of A with B.
+	//* If you need the disjunctive union (the union of two sets minus their intersection), use AppendTags to create
+	//* Union, FilterExact to create Intersection, and then call Union.RemoveTags(Intersection).
+	//*
+	//* @param otherA TagContainer that has the matching tags you want to add to this container, these tags have their parents expanded
+	//* @param otherB TagContainer used to check for matching tags.  If the tag matches on any parent, it counts as a match.
+	//*/
+	//void AppendMatchingTags(FOrbGameplayTagContainer const& otherA, FOrbGameplayTagContainer const& otherB);
 
 	/**
 	 * Add the specified tag to the container
@@ -503,19 +498,16 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	}
 
 	/** Gets a list of the gameplay tags */
-	int32 GetAsArray(TArray<FGameplayTag>& array) const
+	int32 ToArray(TArray<FGameplayTag>& array) const
 	{
 		return GetAsArray(array, false);
 	}
 	
 	/** Gets a list of the gameplay tags */
-	int32 GetAsArrayExact(TArray<FGameplayTag>& array) const
+	int32 ToArrayExact(TArray<FGameplayTag>& array) const
 	{
 		return GetAsArray(array, true);
 	}
-	
-
-	const FGameplayTagContainer& GetAsContainer();
 
 	FOnOrbGameplayTagContainerEntryChange& RegisterTagCountChanged() { return OnTagCountChangedDelegate; }
 	FOnOrbGameplayTagContainerEntryChange& RegisterExactTagCountChanged() { return OnExactTagCountChangedDelegate; }
@@ -558,7 +550,6 @@ protected:
 	*/
 	void RemoveTag(const FGameplayTag& tagToRemove, int32 explicitCount);
 	int32 RemoveTagFromMap(const FGameplayTag& tagToRemove, int32 count, bool isExplicit);
-	
 
 	/** Map of gameplay tags */
 	TMap<FGameplayTag, FOrbGameplayTagContainerEntry> GameplayTags;
@@ -566,25 +557,9 @@ protected:
 	bool TagMatchesAny(const FGameplayTag& tagToCheck) const;
 	bool TagMatchesAnyExact(const FGameplayTag& tagToCheck) const;
 
-	bool IsCachedTagContainerValid = false;
-	FGameplayTagContainer GameplayTagContainer;
-	FGameplayTagContainer& GetContainer();
-	void GetContainerConst(FGameplayTagContainer& container) const;
-	void GetThisContainerVersion(FGameplayTagContainer& container) const;
-	void MakeContainer(FGameplayTagContainer& container, bool exact) const;
-
 	bool IsTagCountChangedEventPaused = false;
 	
 	/** Delegate fired whenever any tag's count changes to or away from zero */
 	FOnOrbGameplayTagContainerEntryChange OnTagCountChangedDelegate;
 	FOnOrbGameplayTagContainerEntryChange OnExactTagCountChangedDelegate;
-private:
-
-	/**
-	 * DO NOT USE DIRECTLY
-	 * STL-like iterators to enable range-based for loop support.
-	 */
-	FORCEINLINE friend TMap<FGameplayTag, FOrbGameplayTagContainerEntry>::TConstIterator begin(const FOrbGameplayTagContainer& Array) { return Array.CreateConstIterator(); }
-	FORCEINLINE friend TMap<FGameplayTag, FOrbGameplayTagContainerEntry>::TConstIterator end(const FOrbGameplayTagContainer& Array) { return TMap<FGameplayTag, FOrbGameplayTagContainerEntry>::TConstIterator(Array.GameplayTags); }
-	
 };
