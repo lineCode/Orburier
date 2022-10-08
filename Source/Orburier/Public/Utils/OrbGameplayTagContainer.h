@@ -52,10 +52,10 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	}
 
 	/** Assignment/Equality operators */
-	FOrbGameplayTagContainer& operator=(FOrbGameplayTagContainer const& other);
-	FOrbGameplayTagContainer& operator=(FOrbGameplayTagContainer&& other) noexcept;
-	bool operator==(FOrbGameplayTagContainer const& other) const;
-	bool operator!=(FOrbGameplayTagContainer const& other) const;
+	FOrbGameplayTagContainer& operator=(FOrbGameplayTagContainer const& Other);
+	FOrbGameplayTagContainer& operator=(FOrbGameplayTagContainer&& Other) noexcept;
+	bool operator==(FOrbGameplayTagContainer const& Other) const;
+	bool operator!=(FOrbGameplayTagContainer const& Other) const;
 
 	/**
 	* Determine if TagToCheck is present in this container, also checking against parent tags
@@ -67,9 +67,8 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasTag(const FGameplayTag& TagToCheck) const
 	{
 		if (!TagToCheck.IsValid())
-		{
 			return false;
-		}
+		
 		// Check explicit and parent tag list 
 		return GameplayTags.Contains(TagToCheck);
 	}
@@ -84,13 +83,11 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasTagExact(const FGameplayTag& TagToCheck) const
 	{
 		if (!TagToCheck.IsValid())
-		{
 			return false;
-		}
 
-		const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(TagToCheck);
+		const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(TagToCheck);
 		// Only check check explicit tag list
-		return tagInfo && tagInfo->ExplicitCount > 0;
+		return TagInfo && TagInfo->ExplicitCount > 0;
 	}
 
 	/**
@@ -103,16 +100,14 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasAny(const FGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return false;
-		}
+		
 		for (const FGameplayTag& OtherTag : ContainerToCheck)
 		{
 			if (GameplayTags.Contains(OtherTag))
-			{
 				return true;
-			}
 		}
+		
 		return false;
 	}
 	/**
@@ -126,16 +121,14 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	bool HasAny(const FOrbGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return false;
-		}
+		
 		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck.GameplayTags)
 		{
 			if (OtherTag.Value.ExplicitCount > 0 && GameplayTags.Contains(OtherTag.Key))
-			{
 				return true;
-			}
 		}
+		
 		return false;
 	}
 
@@ -149,14 +142,14 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasAnyExact(const FGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return false;
-		}
+		
 		for (const FGameplayTag& OtherTag : ContainerToCheck)
 		{
-			const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(OtherTag);
-			if (tagInfo && tagInfo->ExplicitCount > 0) return true;
+			if (const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(OtherTag); TagInfo && TagInfo->ExplicitCount > 0)
+				return true;
 		}
+		
 		return false;
 	}
 	/**
@@ -169,19 +162,18 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasAnyExact(const FOrbGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return false;
-		}
 
 		// Only check check explicit tag list
-		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck)
+		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck.GameplayTags)
 		{
 			if(OtherTag.Value.ExplicitCount > 0)
 			{
-				const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(OtherTag.Key);
-				if (tagInfo && tagInfo->ExplicitCount > 0) return true;
+				if (const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(OtherTag.Key); TagInfo && TagInfo->ExplicitCount > 0)
+					return true;
 			}
 		}
+		
 		return false;
 	}
 
@@ -195,16 +187,14 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasAll(const FGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return true;
-		}
+		
 		for (const FGameplayTag& OtherTag : ContainerToCheck)
 		{
 			if (!GameplayTags.Contains(OtherTag))
-			{
 				return false;
-			}
 		}
+		
 		return true;
 	}
 	/**
@@ -217,18 +207,14 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasAll(const FOrbGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return true;
-		}
+		
 		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck.GameplayTags)
 		{
-			const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(OtherTag.Key);
-			
-			if (!tagInfo)
-			{
+			if (const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(OtherTag.Key); !TagInfo)
 				return false;
-			}
 		}
+		
 		return true;
 	}
 
@@ -242,14 +228,14 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasAllExact(const FGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return true;
-		}
+		
 		for (const FGameplayTag& OtherTag : ContainerToCheck)
 		{
-			const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(OtherTag);
-			if(!tagInfo || tagInfo->ExplicitCount <= 0) return false;
+			if(const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(OtherTag); !TagInfo || TagInfo->ExplicitCount <= 0)
+				return false;
 		}
+		
 		return true;
 	}
 	/**
@@ -262,14 +248,17 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FORCEINLINE_DEBUGGABLE bool HasAllExact(const FOrbGameplayTagContainer& ContainerToCheck) const
 	{
 		if (ContainerToCheck.IsEmpty())
-		{
 			return true;
-		}
+		
 		for (TTuple<FGameplayTag, FOrbGameplayTagContainerEntry> OtherTag : ContainerToCheck.GameplayTags)
 		{
-			const FOrbGameplayTagContainerEntry* tagInfo = GameplayTags.Find(OtherTag.Key);
-			if (!tagInfo || tagInfo->ExplicitCount <= 0) return false;
+			if(OtherTag.Value.ExplicitCount > 0)
+			{
+				if (const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(OtherTag.Key); !TagInfo || TagInfo->ExplicitCount <= 0)
+					return false;
+			}
 		}
+		
 		return true;
 	}
 
@@ -279,17 +268,30 @@ struct ORBURIER_API FOrbGameplayTagContainer
 		return GameplayTags.Num();
 	}
 
-	int32 Num(const FGameplayTag& tag) const
+	/** Returns the number of explicitly added tag types */
+	FORCEINLINE int32 NumExact() const
 	{
-		const FOrbGameplayTagContainerEntry* a = GameplayTags.Find(tag);
-		if(!a) return 0;
-		return a->Count;
+		return ExplicitTagTypeCounter;
 	}
-	int32 NumExact(const FGameplayTag& tag) const
+
+	/*Returns how many times the tag has been added -> implicitly & explicitly*/
+	int32 Num(const FGameplayTag& Tag) const
 	{
-		const FOrbGameplayTagContainerEntry* a = GameplayTags.Find(tag);
-		if(!a) return 0;
-		return a->ExplicitCount;
+		const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(Tag);
+		
+		return !TagInfo
+			? 0
+			: TagInfo->Count;
+	}
+
+	/*Returns how many times the tag has been explicitly added*/
+	int32 NumExact(const FGameplayTag& Tag) const
+	{
+		const FOrbGameplayTagContainerEntry* TagInfo = GameplayTags.Find(Tag);
+		
+		return !TagInfo
+			? 0
+			: TagInfo->ExplicitCount;
 	}
 
 	/** Returns whether the container has any valid tags */
@@ -374,16 +376,16 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	 * Adds all the tags from one container to this container 
 	 * NOTE: From set theory, this effectively is the union of the container this is called on with Other.
 	 *
-	 * @param other TagContainer that has the tags you want to add to this container 
+	 * @param Other TagContainer that has the tags you want to add to this container 
 	 */
-	void AppendTags(FGameplayTagContainer const& other);
+	void AppendTags(FGameplayTagContainer const& Other);
 	/** 
 	* Adds all the tags from one container to this container 
 	* NOTE: From set theory, this effectively is the union of the container this is called on with Other.
 	*
-	* @param other TagContainer that has the tags you want to add to this container 
+	* @param Other TagContainer that has the tags you want to add to this container 
 	*/
-	void AppendTags(FOrbGameplayTagContainer const& other);
+	void AppendTags(FOrbGameplayTagContainer const& Other);
 
 	///** 
 	// * Adds all the tags that match between the two specified containers to this container.  WARNING: This matches any
@@ -445,29 +447,29 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	/**
 	 * Add the specified tag to the container
 	 *
-	 * @param tagToAdd Tag to add to the container
+	 * @param TagToAdd Tag to add to the container
 	 */
-	void AddTag(const FGameplayTag& tagToAdd);
+	void AddTag(const FGameplayTag& TagToAdd);
 
 	/**
 	 * Tag to remove from the container
 	 * 
-	 * @param tagToRemove		Tag to remove from the container
+	 * @param TagToRemove		Tag to remove from the container
 	 */
-	void RemoveTag(const FGameplayTag& tagToRemove);
+	void RemoveTag(const FGameplayTag& TagToRemove);
 
 	/**
 	 * Removes all tags in TagsToRemove from this container
 	 *
-	 * @param tagsToRemove	Tags to remove from the container
+	 * @param TagsToRemove	Tags to remove from the container
 	 */
-	void RemoveTags(const FGameplayTagContainer& tagsToRemove);
+	void RemoveTags(const FGameplayTagContainer& TagsToRemove);
 	/**
 	* Removes all tags in TagsToRemove from this container
 	*
-	* @param tagsToRemove	Tags to remove from the container
+	* @param TagsToRemove	Tags to remove from the container
 	*/
-	void RemoveTags(const FOrbGameplayTagContainer& tagsToRemove);
+	void RemoveTags(const FOrbGameplayTagContainer& TagsToRemove);
 
 	/** Remove all tags and events from the container. Will maintain slack by default */
 	void Reset();
@@ -479,35 +481,35 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	FString ToString() const;
 
 	/** Sets from a ImportText string, used in asset registry */
-	void FromExportString(const FString& exportString, int32 portFlags = 0);
+	void FromExportString(const FString& ExportString, int32 PortFlags = 0);
 
 	/** Returns abbreviated human readable Tag list without parens or property names. If bQuoted is true it will quote each tag */
-	FString ToStringSimple(bool isQuoted = false) const;
+	FString ToStringSimple(bool IsQuoted = false) const;
 
 	/** Returns abbreviated human readable Tag list without parens or property names, but will limit each string to specified len.  This is to get around output restrictions*/
-	TArray<FString> ToStringsMaxLen(int32 maxLen) const;
+	TArray<FString> ToStringsMaxLen(int32 MaxLen) const;
 
 	/** Returns human readable description of what match is being looked for on the readable tag list. */
-	FText ToMatchingText(EGameplayContainerMatchType matchType, bool bInvertCondition) const;
+	FText ToMatchingText(EGameplayContainerMatchType MatchType, bool bInvertCondition) const;
 	
 
 	/** Creates a const iterator for the contents of this array */
-	TMap<FGameplayTag, FOrbGameplayTagContainerEntry>::TConstIterator CreateConstIterator() const
-	{
-		return GameplayTags.CreateConstIterator();
-	}
+	//TMap<FGameplayTag, FOrbGameplayTagContainerEntry>::TConstIterator CreateConstIterator() const
+	//{
+	//	return GameplayTags.CreateConstIterator();
+	//}
 
 	/** Gets a list of the gameplay tags */
-	int32 ToArray(TArray<FGameplayTag>& array) const
-	{
-		return GetAsArray(array, false);
-	}
+	//int32 ToArray(TArray<FGameplayTag>& Array) const
+	//{
+	//	return GetAsArray(Array, false);
+	//}
 	
 	/** Gets a list of the gameplay tags */
-	int32 ToArrayExact(TArray<FGameplayTag>& array) const
-	{
-		return GetAsArray(array, true);
-	}
+	//int32 ToArrayExact(TArray<FGameplayTag>& Array) const
+	//{
+	//	return GetAsArray(Array, true);
+	//}
 
 	FOnOrbGameplayTagContainerEntryChange& RegisterTagCountChanged() { return OnTagCountChangedDelegate; }
 	FOnOrbGameplayTagContainerEntryChange& RegisterExactTagCountChanged() { return OnExactTagCountChangedDelegate; }
@@ -517,47 +519,52 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	void SendTagCountStateAsChange();
 	bool IsChangedEventPaused() const;
 
+	void Compress();
+
 protected:
 	/** Gets a list of the gameplay tags */
-	int32 GetAsArray(TArray<FGameplayTag>& array, bool exact) const
+	int32 GetAsArray(TArray<FGameplayTag>& Array, const bool IsExact) const
 	{
-		if(!exact) return GameplayTags.GetKeys(array);
+		if(!IsExact)
+			return GameplayTags.GetKeys(Array);
 
-		array.Reset();
+		Array.Reset();
 		for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& GameplayTag : GameplayTags)
 		{
 			if(GameplayTag.Value.ExplicitCount > 0)
-				array.Add(GameplayTag.Key);
+				Array.Add(GameplayTag.Key);
 		}
 
-		return array.Num();
+		return Array.Num();
 	}
 	
 	/**
 	* Add the specified tag to the container
 	*
-	* @param tagToAdd Tag to add to the container
-	* @param explicitCount Number that should be added to the tag count (explicit -> implicit will be added accordingly by the function)
+	* @param TagToAdd Tag to add to the container
+	* @param ExplicitCount Number that should be added to the tag count (explicit -> implicit will be added accordingly by the function)
 	*/
-	void AddTag(const FGameplayTag& tagToAdd, int32 explicitCount);
-	void AddTagToMap(const FGameplayTag& tagToAdd, int32 count, bool isExplicit);
+	void AddTag(const FGameplayTag& TagToAdd, int32 ExplicitCount);
+	void AddTagToMap(const FGameplayTag& TagToAdd, int32 Count, bool IsExplicit);
 
 	/**
 	* Tag to remove from the container
 	* 
-	* @param tagToRemove		Tag to remove from the container
-	* @param explicitCount		Number that should be removed from the tag count (explicit -> implicit will be removed accordingly by the function)
+	* @param TagToRemove		Tag to remove from the container
+	* @param ExplicitCount		Number that should be removed from the tag count (explicit -> implicit will be removed accordingly by the function)
 	*/
-	void RemoveTag(const FGameplayTag& tagToRemove, int32 explicitCount);
-	int32 RemoveTagFromMap(const FGameplayTag& tagToRemove, int32 count, bool isExplicit);
+	void RemoveTag(const FGameplayTag& TagToRemove, int32 ExplicitCount);
+	int32 RemoveTagFromMap(const FGameplayTag& TagToRemove, int32 Count, bool IsExplicit);
+
+	bool TagMatchesAny(const FGameplayTag& TagToCheck) const;
+	bool TagMatchesAnyExact(const FGameplayTag& TagToCheck) const;
 
 	/** Map of gameplay tags */
 	TMap<FGameplayTag, FOrbGameplayTagContainerEntry> GameplayTags;
 
-	bool TagMatchesAny(const FGameplayTag& tagToCheck) const;
-	bool TagMatchesAnyExact(const FGameplayTag& tagToCheck) const;
-
+	bool IsGameplayTagsMapDirty = false;
 	bool IsTagCountChangedEventPaused = false;
+	int32 ExplicitTagTypeCounter = 0;
 	
 	/** Delegate fired whenever any tag's count changes to or away from zero */
 	FOnOrbGameplayTagContainerEntryChange OnTagCountChangedDelegate;

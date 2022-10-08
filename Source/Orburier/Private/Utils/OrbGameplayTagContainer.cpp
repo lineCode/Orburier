@@ -8,47 +8,45 @@
 
 DECLARE_CYCLE_STAT(TEXT("FOrbGameplayTagContainer::Filter"), STAT_FOrbGameplayTagContainer_Filter, STATGROUP_GameplayTags);
 
-FOrbGameplayTagContainer& FOrbGameplayTagContainer::operator=(FOrbGameplayTagContainer const& other)
+FOrbGameplayTagContainer& FOrbGameplayTagContainer::operator=(FOrbGameplayTagContainer const& Other)
 {
 	// Guard against self-assignment
-	if (this == &other)
+	if (this == &Other)
 	{
 		return *this;
 	}
-	GameplayTags.Empty(other.GameplayTags.Num());
-	GameplayTags.Append(other.GameplayTags);
+	GameplayTags.Empty(Other.GameplayTags.Num());
+	GameplayTags.Append(Other.GameplayTags);
 
 	return *this;
 }
 
-FOrbGameplayTagContainer& FOrbGameplayTagContainer::operator=(FOrbGameplayTagContainer&& other) noexcept
+FOrbGameplayTagContainer& FOrbGameplayTagContainer::operator=(FOrbGameplayTagContainer&& Other) noexcept
 {
-	GameplayTags = MoveTemp(other.GameplayTags);
+	GameplayTags = MoveTemp(Other.GameplayTags);
 	return *this;
 }
 
-bool FOrbGameplayTagContainer::operator==(FOrbGameplayTagContainer const& other) const
+bool FOrbGameplayTagContainer::operator==(FOrbGameplayTagContainer const& Other) const
 {
 	// This is to handle the case where the two containers are in different orders
-	if (GameplayTags.Num() != other.GameplayTags.Num())
+	if (GameplayTags.Num() != Other.GameplayTags.Num())
 	{
 		return false;
 	}
 
-	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : other.GameplayTags)
+	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& Tag : Other.GameplayTags)
 	{
-		if (!TagMatchesAnyExact(tag.Key))
-		{
+		if(const FOrbGameplayTagContainerEntry* ThisTagEntry = GameplayTags.Find(Tag.Key); !ThisTagEntry || ThisTagEntry->Count != Tag.Value.Count)
 			return false;
-		}
 	}
 
 	return true;
 }
 
-bool FOrbGameplayTagContainer::operator!=(FOrbGameplayTagContainer const& other) const
+bool FOrbGameplayTagContainer::operator!=(FOrbGameplayTagContainer const& Other) const
 {
-	return !operator==(other);
+	return !operator==(Other);
 }
 
 //FGameplayTagContainer FOrbGameplayTagContainer::Filter(const FGameplayTagContainer& otherContainer) const
@@ -191,42 +189,38 @@ bool FOrbGameplayTagContainer::operator!=(FOrbGameplayTagContainer const& other)
 //	return resultContainer;
 //}
 
-void FOrbGameplayTagContainer::AppendTags(FGameplayTagContainer const& other)
+void FOrbGameplayTagContainer::AppendTags(FGameplayTagContainer const& Other)
 {
-	const int32 otherSize = other.Num();
-	if(otherSize > 0)
+	if(const int32 OtherSize = Other.Num(); OtherSize > 0)
 	{
-		const int32 thisSize = GameplayTags.Num();
-
-		if(thisSize < otherSize)
+		if(const int32 ThisSize = GameplayTags.Num(); ThisSize < OtherSize)
 		{
-			GameplayTags.Reserve(GameplayTags.Num() + (otherSize - thisSize));
+			GameplayTags.Reserve(GameplayTags.Num() + (OtherSize - ThisSize));
 		}
 	
 		// Add other container's tags to our own
-		for(const FGameplayTag& otherTag : other)
+		for(const FGameplayTag& otherTag : Other)
 		{
 			AddTag(otherTag);
 		}
 	}
 }
 
-void FOrbGameplayTagContainer::AppendTags(FOrbGameplayTagContainer const& other)
+void FOrbGameplayTagContainer::AppendTags(FOrbGameplayTagContainer const& Other)
 {
-	const int32 thisSize = GameplayTags.Num();
-	const int32 otherSize = other.Num();
-	
-	if(thisSize < otherSize)
+	const int32 ThisSize = GameplayTags.Num();
+
+	if(const int32 OtherSize = Other.Num(); ThisSize < OtherSize)
 	{
-		GameplayTags.Reserve(GameplayTags.Num() + (otherSize - thisSize));
+		GameplayTags.Reserve(GameplayTags.Num() + (OtherSize - ThisSize));
 	}
 	
 	// Add other container's tags to our own
-	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& otherTag : other.GameplayTags)
+	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& OtherTag : Other.GameplayTags)
 	{
-		if(otherTag.Value.ExplicitCount > 0)
+		if(OtherTag.Value.ExplicitCount > 0)
 		{
-			AddTag(otherTag.Key, otherTag.Value.ExplicitCount);
+			AddTag(OtherTag.Key, OtherTag.Value.ExplicitCount);
 		}
 	}
 }
@@ -281,118 +275,132 @@ void FOrbGameplayTagContainer::AppendTags(FOrbGameplayTagContainer const& other)
 //	}
 //}
 
-void FOrbGameplayTagContainer::RemoveTags(const FGameplayTagContainer& tagsToRemove)
+void FOrbGameplayTagContainer::RemoveTags(const FGameplayTagContainer& TagsToRemove)
 {
-	for(const FGameplayTag& tag : tagsToRemove)
+	for(const FGameplayTag& Tag : TagsToRemove)
 	{
-		RemoveTag(tag);
+		RemoveTag(Tag);
 	}
 }
 
-void FOrbGameplayTagContainer::RemoveTags(const FOrbGameplayTagContainer& tagsToRemove)
+auto FOrbGameplayTagContainer::RemoveTags(const FOrbGameplayTagContainer& TagsToRemove) -> void
 {
-	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : tagsToRemove.GameplayTags)
+	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& Tag : TagsToRemove.GameplayTags)
 	{
-		if(tag.Value.ExplicitCount > 0)
+		if(Tag.Value.ExplicitCount > 0)
 		{
-			RemoveTag(tag.Key, tag.Value.ExplicitCount);
+			RemoveTag(Tag.Key, Tag.Value.ExplicitCount);
 		}
 	}
 }
 
-void FOrbGameplayTagContainer::RemoveTag(const FGameplayTag& tagToRemove)
+void FOrbGameplayTagContainer::RemoveTag(const FGameplayTag& TagToRemove)
 {
-	RemoveTag(tagToRemove, 1);
+	RemoveTag(TagToRemove, 1);
 }
 
-void FOrbGameplayTagContainer::RemoveTag(const FGameplayTag& tagToRemove, int32 explicitCount)
+void FOrbGameplayTagContainer::RemoveTag(const FGameplayTag& TagToRemove, int32 ExplicitCount)
 {
-	bool isExplicit = true;
-	FGameplayTagContainer tagContainer = tagToRemove.GetGameplayTagParents();
-	for(const FGameplayTag& tag : tagContainer)
+	bool IsExplicit = true;
+	FGameplayTagContainer TagContainer = TagToRemove.GetGameplayTagParents();
+	for(const FGameplayTag& Tag : TagContainer)
 	{
-		explicitCount = RemoveTagFromMap(tag, explicitCount, isExplicit);
-		if(isExplicit)
+		ExplicitCount = RemoveTagFromMap(Tag, ExplicitCount, IsExplicit);
+		if(IsExplicit)
 		{
-			if(explicitCount <= 0)
+			if(ExplicitCount <= 0)
 				break;
 
-			isExplicit = false;
+			IsExplicit = false;
 		}
 	}
 }
 
-int32 FOrbGameplayTagContainer::RemoveTagFromMap(const FGameplayTag& tagToRemove, int32 count, bool isExplicit)
+int32 FOrbGameplayTagContainer::RemoveTagFromMap(const FGameplayTag& TagToRemove, int32 Count, const bool IsExplicit)
 {
-	if(FOrbGameplayTagContainerEntry* entry = GameplayTags.Find(tagToRemove))
+	if(FOrbGameplayTagContainerEntry* Entry = GameplayTags.Find(TagToRemove))
 	{
-		if(isExplicit && count > entry->ExplicitCount)
-			count = entry->ExplicitCount;
+		if(IsExplicit && Count > Entry->ExplicitCount)
+			Count = Entry->ExplicitCount;
 
-		if(count > 0)
+		if(Count > 0)
 		{
-			if(isExplicit)
-				entry->ExplicitCount -= count;
+			if(IsExplicit)
+			{
+				Entry->ExplicitCount -= Count;
 
-			entry->Count -= count;
+				if(Entry->ExplicitCount <= 0)
+					ExplicitTagTypeCounter--;
+			}
+			
+			Entry->Count -= Count;
 
 			if(!IsTagCountChangedEventPaused)
 			{
-				if(isExplicit)
-					OnExactTagCountChangedDelegate.Broadcast(tagToRemove, entry->ExplicitCount);
+				if(IsExplicit)
+					OnExactTagCountChangedDelegate.Broadcast(TagToRemove, Entry->ExplicitCount);
 				
-				OnTagCountChangedDelegate.Broadcast(tagToRemove, entry->Count);
+				OnTagCountChangedDelegate.Broadcast(TagToRemove, Entry->Count);
 			}
 		}
 
-		if(entry->Count <= 0)
-			GameplayTags.Remove(tagToRemove);
+		if(Entry->Count <= 0)
+		{
+			if(IsTagCountChangedEventPaused) IsGameplayTagsMapDirty = true;
+			else GameplayTags.Remove(TagToRemove);
+		}
+			
 	}
-	else count = 0;
+	else Count = 0;
 		
 
-	return count;
+	return Count;
 }
 
-void FOrbGameplayTagContainer::AddTag(const FGameplayTag& tagToAdd)
+void FOrbGameplayTagContainer::AddTag(const FGameplayTag& TagToAdd)
 {
-	AddTag(tagToAdd, 1);
+	AddTag(TagToAdd, 1);
 }
 
-void FOrbGameplayTagContainer::AddTag(const FGameplayTag& tagToAdd, int32 explicitCount)
+void FOrbGameplayTagContainer::AddTag(const FGameplayTag& TagToAdd, const int32 ExplicitCount)
 {
 	//AddTagToMap(TagToAdd, explicitCount, true);
-	bool isExplicit = true;
-	FGameplayTagContainer tagContainer = tagToAdd.GetGameplayTagParents();
-	for(const FGameplayTag& tag : tagContainer)
+	bool bIsExplicit = true;
+	FGameplayTagContainer TagContainer = TagToAdd.GetGameplayTagParents();
+	for(const FGameplayTag& Tag : TagContainer)
 	{
-		AddTagToMap(tag, explicitCount, isExplicit);
-		isExplicit = false;
+		AddTagToMap(Tag, ExplicitCount, bIsExplicit);
+		bIsExplicit = false;
 	}
 }
 
-void FOrbGameplayTagContainer::AddTagToMap(const FGameplayTag& tagToAdd, int32 count, bool isExplicit)
+void FOrbGameplayTagContainer::AddTagToMap(const FGameplayTag& TagToAdd, const int32 Count, const bool IsExplicit)
 {
-	FOrbGameplayTagContainerEntry* entry = GameplayTags.Find(tagToAdd);
+	FOrbGameplayTagContainerEntry* Entry = GameplayTags.Find(TagToAdd);
 
-	if(!entry)
+	if(!Entry)
 	{
-		entry = &GameplayTags.Add(tagToAdd, FOrbGameplayTagContainerEntry());
+		Entry = &GameplayTags.Add(TagToAdd, FOrbGameplayTagContainerEntry());
 	}
 
-	if(entry)
+	if(Entry && Count > 0)
 	{
-		if(isExplicit)
-			entry->ExplicitCount += count;
+		if(IsExplicit)
+		{
+			if(Entry->ExplicitCount == 0)
+				ExplicitTagTypeCounter++;
+			
+			Entry->ExplicitCount += Count;
+		}
 
-		entry->Count += count;
+		Entry->Count += Count;
 
 		if(!IsTagCountChangedEventPaused)
 		{
-			if(isExplicit)
-				OnExactTagCountChangedDelegate.Broadcast(tagToAdd, entry->ExplicitCount);
+			if(IsExplicit)
+				OnExactTagCountChangedDelegate.Broadcast(TagToAdd, Entry->ExplicitCount);
 			
-			OnTagCountChangedDelegate.Broadcast(tagToAdd, entry->Count);
+			OnTagCountChangedDelegate.Broadcast(TagToAdd, Entry->Count);
 		}
 			
 	}
@@ -406,20 +414,37 @@ void FOrbGameplayTagContainer::PauseTagChangedEvent()
 void FOrbGameplayTagContainer::ContinuePauseTagChangedEvent()
 {
 	IsTagCountChangedEventPaused = false;
+	Compress();
 }
 
 void FOrbGameplayTagContainer::SendTagCountStateAsChange()
 {
-	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& tag : GameplayTags)
+	const bool isPaused = IsChangedEventPaused();
+	for(const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& Tag : GameplayTags)
 	{
-		OnExactTagCountChangedDelegate.Broadcast(tag.Key, tag.Value.ExplicitCount);
-		OnTagCountChangedDelegate.Broadcast(tag.Key, tag.Value.Count);
+		if(isPaused || Tag.Value.ExplicitCount > 0)
+			OnExactTagCountChangedDelegate.Broadcast(Tag.Key, Tag.Value.ExplicitCount);
+		
+		OnTagCountChangedDelegate.Broadcast(Tag.Key, Tag.Value.Count);
 	}
 }
 
 bool FOrbGameplayTagContainer::IsChangedEventPaused() const
 {
 	return IsTagCountChangedEventPaused;
+}
+
+void FOrbGameplayTagContainer::Compress()
+{
+	if(IsGameplayTagsMapDirty)
+	{
+		for(auto ItRemove = GameplayTags.CreateIterator(); ItRemove; ++ItRemove)
+		{
+			if(ItRemove.Value().Count <= 0)
+				ItRemove.RemoveCurrent();
+		}
+		IsGameplayTagsMapDirty = false;
+	}
 }
 
 void FOrbGameplayTagContainer::Reset()
@@ -437,71 +462,71 @@ void FOrbGameplayTagContainer::Empty()
 
 FString FOrbGameplayTagContainer::ToString() const
 {
-	FString exportString;
-	FOrbGameplayTagContainer::StaticStruct()->ExportText(exportString, this, this, nullptr, 0, nullptr);
+	FString ExportString;
+	FOrbGameplayTagContainer::StaticStruct()->ExportText(ExportString, this, this, nullptr, 0, nullptr);
 
-	return exportString;
+	return ExportString;
 }
 
-void FOrbGameplayTagContainer::FromExportString(const FString& exportString, int32 portFlags)
+auto FOrbGameplayTagContainer::FromExportString(const FString& ExportString, const int32 PortFlags) -> void
 {
 	Reset();
 
 	FOutputDeviceNull NullOut;
-	FOrbGameplayTagContainer::StaticStruct()->ImportText(*exportString, this, nullptr, portFlags, &NullOut, TEXT("FOrbGameplayTagContainer"), true);
+	FOrbGameplayTagContainer::StaticStruct()->ImportText(*ExportString, this, nullptr, PortFlags, &NullOut, TEXT("FOrbGameplayTagContainer"), true);
 }
 
-FString FOrbGameplayTagContainer::ToStringSimple(bool isQuoted) const
+FString FOrbGameplayTagContainer::ToStringSimple(const bool IsQuoted) const
 {
-	FString retString;
+	FString RetString;
 	for (const TTuple<FGameplayTag, FOrbGameplayTagContainerEntry>& gameplayTag : GameplayTags)
 	{
-		if (isQuoted)
+		if (IsQuoted)
 		{
-			retString += TEXT("\"");
+			RetString += TEXT("\"");
 		}
-		retString += gameplayTag.Key.ToString();
-		if (isQuoted)
+		RetString += gameplayTag.Key.ToString();
+		if (IsQuoted)
 		{
-			retString += TEXT("\"");
+			RetString += TEXT("\"");
 		}
-		retString += TEXT(", ");
+		RetString += TEXT(", ");
 	}
-	return retString;
+	return RetString;
 }
 
-TArray<FString> FOrbGameplayTagContainer::ToStringsMaxLen(int32 maxLen) const
+TArray<FString> FOrbGameplayTagContainer::ToStringsMaxLen(const int32 MaxLen) const
 {
 	// caveat, if MaxLen < than a tag string, full string will be put in array (as a single line in the array)
 	// since this is used for debug output.  If need to clamp, it can be added.  Also, strings will end in ", " to 
 	// avoid extra complication.
-	TArray<FString> retStrings;
-	FString curLine;
-	curLine.Reserve(maxLen);
+	TArray<FString> RetStrings;
+	FString CurLine;
+	CurLine.Reserve(MaxLen);
 
 	for (const auto & GameplayTag : GameplayTags)
 	{
 		FString TagString = GameplayTag.Key.ToString();
 		TagString += TEXT(",");
 		// Add 1 for space
-		if (curLine.Len() + TagString.Len() + 1 >= maxLen)
+		if (CurLine.Len() + TagString.Len() + 1 >= MaxLen)
 		{
-			retStrings.Add(curLine);
-			curLine = TagString;
+			RetStrings.Add(CurLine);
+			CurLine = TagString;
 		} 
 		else
 		{
-			curLine += TagString + TEXT(" ");
+			CurLine += TagString + TEXT(" ");
 		}
 	}
-	if (curLine.Len() > 0)
+	if (CurLine.Len() > 0)
 	{
-		retStrings.Add(curLine);
+		RetStrings.Add(CurLine);
 	}
-	return retStrings;
+	return RetStrings;
 }
 
-FText FOrbGameplayTagContainer::ToMatchingText(EGameplayContainerMatchType matchType, bool bInvertCondition) const
+FText FOrbGameplayTagContainer::ToMatchingText(EGameplayContainerMatchType MatchType, const bool bInvertCondition) const
 {
 	enum class EMatchingTypes : int8
 	{
@@ -520,7 +545,7 @@ FText FOrbGameplayTagContainer::ToMatchingText(EGameplayContainerMatchType match
 #undef LOCTEXT_NAMESPACE
 
 	int32 DescriptionIndex = bInvertCondition ? static_cast<int32>(EMatchingTypes::Inverted) : 0;
-	switch (matchType)
+	switch (MatchType)
 	{
 	case EGameplayContainerMatchType::All:
 		DescriptionIndex |= static_cast<int32>(EMatchingTypes::All);
@@ -530,7 +555,7 @@ FText FOrbGameplayTagContainer::ToMatchingText(EGameplayContainerMatchType match
 		break;
 
 	default:
-		UE_LOG(LogGameplayTags, Warning, TEXT("Invalid value for TagsToMatch (EGameplayContainerMatchType) %d.  Should only be Any or All."), static_cast<int32>(matchType));
+		UE_LOG(LogGameplayTags, Warning, TEXT("Invalid value for TagsToMatch (EGameplayContainerMatchType) %d.  Should only be Any or All."), static_cast<int32>(MatchType));
 		break;
 	}
 
@@ -539,26 +564,26 @@ FText FOrbGameplayTagContainer::ToMatchingText(EGameplayContainerMatchType match
 	return FText::Format(MatchingDescription[DescriptionIndex], Arguments);
 }
 
-bool FOrbGameplayTagContainer::TagMatchesAny(const FGameplayTag& tagToCheck) const
+bool FOrbGameplayTagContainer::TagMatchesAny(const FGameplayTag& TagToCheck) const
 {
-	if (const FGameplayTagContainer* tagContainer = UGameplayTagsManager::Get().GetSingleTagContainer(tagToCheck))
+	if (const FGameplayTagContainer* TagContainer = UGameplayTagsManager::Get().GetSingleTagContainer(TagToCheck))
 	{
-		return HasAny(*tagContainer);
+		return HasAny(*TagContainer);
 	}
 
 	// This should always be invalid if the node is missing
-	ensureMsgf(!IsValid(), TEXT("Valid tag failed to conver to single tag container. %s"), *tagToCheck.ToString() );
+	ensureMsgf(!IsValid(), TEXT("Valid tag failed to conver to single tag container. %s"), *TagToCheck.ToString() );
 	return false;
 }
 
-bool FOrbGameplayTagContainer::TagMatchesAnyExact(const FGameplayTag& tagToCheck) const
+bool FOrbGameplayTagContainer::TagMatchesAnyExact(const FGameplayTag& TagToCheck) const
 {
-	if (const FGameplayTagContainer* tagContainer = UGameplayTagsManager::Get().GetSingleTagContainer(tagToCheck))
+	if (const FGameplayTagContainer* TagContainer = UGameplayTagsManager::Get().GetSingleTagContainer(TagToCheck))
 	{
-		return HasAnyExact(*tagContainer);
+		return HasAnyExact(*TagContainer);
 	}
 
 	// This should always be invalid if the node is missing
-	ensureMsgf(!IsValid(), TEXT("Valid tag failed to conver to single tag container. %s"), *tagToCheck.ToString() );
+	ensureMsgf(!IsValid(), TEXT("Valid tag failed to conver to single tag container. %s"), *TagToCheck.ToString() );
 	return false;
 }
