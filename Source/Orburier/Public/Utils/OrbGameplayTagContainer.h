@@ -511,8 +511,8 @@ struct ORBURIER_API FOrbGameplayTagContainer
 	//	return GetAsArray(Array, true);
 	//}
 
-	FOnOrbGameplayTagContainerEntryChange& RegisterTagCountChanged() { return OnTagCountChangedDelegate; }
-	FOnOrbGameplayTagContainerEntryChange& RegisterExactTagCountChanged() { return OnExactTagCountChangedDelegate; }
+	FOnOrbGameplayTagContainerEntryChange& OnTagCountChanged() { return OnTagCountChangedDelegate; }
+	FOnOrbGameplayTagContainerEntryChange& OnExactTagCountChanged() { return OnExactTagCountChangedDelegate; }
 
 	void PauseTagChangedEvent();
 	void ContinuePauseTagChangedEvent();
