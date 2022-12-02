@@ -25,7 +25,10 @@ public class Orburier : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core", 
+				"NetworkPrediction",
+				"GameplayTags",
+				"NetCore"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -37,8 +40,7 @@ public class Orburier : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
-				"GameplayTags"
+				"SlateCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
