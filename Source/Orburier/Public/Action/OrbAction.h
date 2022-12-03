@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "OrbActionHandle.h"
 #include "UObject/Object.h"
+#include "Utils/OrbTimeState.h"
 #include "OrbAction.generated.h"
 
 
@@ -56,6 +58,62 @@ enum class EOrbActivityPolicy : uint8
 	MAX				UMETA(Hidden)
 };
 
+
+class UOrbAction;
+
+USTRUCT()
+struct ORBURIER_API FOrbActionStateHandler
+{
+	GENERATED_BODY()
+
+	FOrbActionHandle Handle;
+};
+
+struct ORBURIER_API FOrbActionAttributeAccessor
+{
+protected:
+	void ConfigureBase(UOrbAction* owner);
+
+	FOrbActionStateHandler& GetStateHandler();
+	
+private:
+	FOrbActionHandle OwnerHandle;
+	TWeakObjectPtr<UOrbAction> OwnerPtr;
+
+	void RestoreOwnerPtr();
+};
+
+template<typename AttributeType>
+struct ORBURIER_API TOrbActionAttributeRead : FOrbActionAttributeAccessor
+{
+public:
+	void Configure(UOrbAction* owner)
+	{
+		ConfigureBase(owner);
+	}
+
+	AttributeType* Get()
+	{
+		return nullptr;
+	}
+};
+
+template<typename AttributeType>
+struct ORBURIER_API TOrbActionAttributeWrite : FOrbActionAttributeAccessor
+{
+public:
+	void Configure(UOrbAction* owner)
+	{
+		ConfigureBase(owner);
+	}
+
+	AttributeType* Get()
+	{
+		return nullptr;
+	}
+};
+
+
 /**
  * 
  */
@@ -88,4 +146,28 @@ public:
 	virtual const FGameplayTagContainer* GetActivationRequiredTags() const;
 
 	virtual const FGameplayTagContainer* GetActivationBlockedTags() const;
+
+	virtual void Configure();
+
+	virtual bool CanActivate(const FOrbTimeState& TimeState, bool isExternal) { return false; }
+	
+	virtual bool CanDeactivate(const FOrbTimeState& TimeState, bool isExternal) { return false; }
+
+	virtual void OnActivate(const FOrbTimeStep& TimeStep) { }
+
+	virtual void OnDeactivate(const FOrbTimeStep& TimeStep, const FOrbTime& ActivationTime) { }
+
+	virtual void OnSimulate(const FOrbTimeStep& TimeStep, const FOrbTime& ActivationTime) { }
+	
+	virtual void OnEffect(const FOrbTimeState& TimeStep, const FOrbTime& ActivationTime, bool isReconcile) { }
+
+protected:
+	TOrbActionAttributeWrite<FOrbActionStateHandler> WriteConfig;
+	
+private:
+	FOrbActionStateHandler Configuration;
+
+	friend TOrbActionAttributeRead;
+	friend TOrbActionAttributeWrite;
+	friend FOrbActionAttributeAccessor;
 };
